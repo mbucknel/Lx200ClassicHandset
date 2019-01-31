@@ -1,0 +1,61 @@
+The Handset communications protocol is serial 9600,n,8,1 - Note the signal is inverted, so if you want to sniff the transmission, 
+the best method is with a FTDI usb / serial port and use the FTDI utility to invert the Tx & Rx
+Use Realterm and you can view the hex or ascii or for some sequences below, i have both
+
+The LX200 Classic needs an initalisation code from the handset to complete its boot up sequence
+The init sequence is :- 
+FF FF FF FF FF 2A
+
+The initial sequence is :-
+F0  1B 131  20  20  20  20 L4C X58 232 030 030 /2F 232  1B 232  20  20 V56 e65 
+r72 s73 i69 o6F n6E  20 333 .2E 333 434 L4C  
+1B L4C  08  1B M4D  01  04  0E  15 
+ 04  04  15  0E  04  04  15  0E  1B  1B  0E  15  04  04  01  02  02  02  04  14 
+ 1C  08  04  04  04  04  04  15  0E  04  1B M4D  00  1B 131  20 T54 E45 L4C E45 
+S53 C43 O4F P50 E45  20  20  20  20  20  20  1B 232  20 O4F B42 J4A E45 C43 T54 
+ 20 L4C I49 B42 R52 A41 R52 Y59  20  1B 131 ~7E
+ 
+1B = start of a line / sequence / command
+~ (7E) is the -> char on the display
+
+Basics :-
+a sequence for each line (2 x 16 LCD) is sent starting with 1B, the 2nd char denotes the line number (31 = 1 or 32 = 2) and then the
+digits to be displayed are sent
+if there is a selection (using next / prev buttons) then a 3rd line is sent with the line number of the selection and the -> char (~ = 7E)
+so for the first display
+
+1 TELESCOPE      2 OBJECT LIBRARY 1~ 
+
+The Hex sequence is
+1B312054454C4553434F5045202020202020
+1B32204F424A454354204C49425241525920
+1B317E
+
+As you can see the lines start with 1B, the 2nd char 31 or 32 denotes line number and the rest is the ascii text
+
+The only difference is when there is inputs Eg you press the M key and it asks for an input, when you type the digits, they are just displayed
+until you press enter
+
+There are a number of special functions to control other things like the movement speed, ALT led and clearing the screen
+
+CM object:PPDLS
+1B 43(C) denotes a special function, usually M, Star or CNGC lookup and the the line is displayed on Line 1
+the rest sets a flashing cursor on line 2 and waits for an input
+
+1B 42(B) is a clear screen command
+1B 44(D) followed by 00 or 01 sets the ALT LED on or off
+1B 4C(L) followed by 08, 04, 02 or 01 sets slew speed LED's 08 being the top led and fastest slew speed
+
+
+For Ardunino strings, the low char values 00-08 cause issues in strings, so some special code handling was needed to handle these
+
+For sending handset codes, each button sends 2 values, one on make and another on break
+
+for Enter 0D is sent on the key down and then 8D on the key up
+
+The codes are here http://www.lx200classic.com/files/Meade%20LX200%20Classic%20Hand%20Controller%20Key%20Codes.pdf
+(Note there is a couple of errors on W key, the up is listed as B7 and it should be D7, S is listed as C3 and it should be D3)
+
+
+
+
